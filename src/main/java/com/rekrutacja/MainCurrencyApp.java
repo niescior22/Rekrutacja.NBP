@@ -5,9 +5,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -55,14 +53,14 @@ public class MainCurrencyApp {
             String json = webResponse.getEntity(String.class);
 
 
-            // Parsowanie Jasonba na POJO przy pomocy biblioteki Jackson
+            // Parsowanie Jsona na POJO przy pomocy biblioteki Jackson
             ObjectMapper mapper = new ObjectMapper();
 
             ExchangeRates exchangeRates = mapper.readValue(json, ExchangeRates.class);
 
             List<Rate> rates = exchangeRates.getRates();
-            //zaokrąglenie wynikow  metod na srednia bidow i odchylebie standardowe askow
-            double bidMean=getMean(rates);
+            //zaokrąglenie wynikow  metod na srednia bidow i odchylenie standardowe askow
+            double bidMean=getBidMean(rates);
             bidMean *= 10000;
             bidMean=Math.round(bidMean);
             bidMean /= 10000;
@@ -85,7 +83,7 @@ public class MainCurrencyApp {
 
     }
        //metoda licząca średnią bidow
-    public static double getMean(List<Rate> rates) {
+    private static double getBidMean(List<Rate> rates) {
         double sum = 0.0;
         double mean = 0.0;
         for (int i = 0; i < rates.size(); i++) {
@@ -95,7 +93,7 @@ public class MainCurrencyApp {
         return mean;
     }
     //metoda licząca srednią askow
-    public static double getAskMean(List<Rate>rates){
+    private static double getAskMean(List<Rate>rates){
         double sum =0.0;
         double mean = 0.0;
         for (int i = 0; i < rates.size(); i++) {
@@ -107,7 +105,7 @@ public class MainCurrencyApp {
 
     }
     //metoda licząca odchylenie standardowe askow
-    public static  double getStandartDevotion(List<Rate> rates) {
+    private static  double getStandartDevotion(List<Rate> rates) {
         List<Double> listofdiffrences = new ArrayList<Double>();
         List<Double> squares = new ArrayList<Double>();
         double mean=getAskMean(rates);
@@ -116,18 +114,17 @@ public class MainCurrencyApp {
         double result ;
 
 
-
-        for(int i=0;i<rates.size();i++){
-            double diffrence = rates.get(i).getAsk()- mean;
+        for (Rate rate : rates) {
+            double diffrence = rate.getAsk() - mean;
             listofdiffrences.add(diffrence);
         }
-        for (int i=0;i<listofdiffrences.size();i++){
-            double square = listofdiffrences.get(i)*listofdiffrences.get(i);
+        for (Double listofdiffrence : listofdiffrences) {
+            double square = listofdiffrence * listofdiffrence;
             squares.add(square);
         }
 
-        for (int i =0;i<squares.size();i++){
-            sum+=squares.get(i);
+        for (Double square : squares) {
+            sum += square;
 
         }
         var = sum/(rates.size());
@@ -135,4 +132,5 @@ public class MainCurrencyApp {
         result = Math.sqrt(var);
         return  result;
     }
+
 }
